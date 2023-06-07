@@ -39,4 +39,9 @@ public class PostController {
     public void removeById(@PathVariable long id) {
         service.removeById(id);
     }
+
+    @GetMapping("/all")
+    public List<Post> allPosts() {
+        return service.allPosts();
+    }
 }
