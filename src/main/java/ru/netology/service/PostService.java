@@ -11,41 +11,45 @@ import java.util.stream.Collectors;
 
 @Service
 public class PostService {
-  private final PostRepository repository;
+    private final PostRepository repository;
 
-  public PostService(PostRepository repository) {
-    this.repository = repository;
-  }
+    public PostService(PostRepository repository) {
+        this.repository = repository;
+    }
 
-  public List<Post> all() {
-    return repository.all();
-  }
+    public List<PostDto> all() {
+        return findAllDto();
+    }
 
-  public Post getById(long id) {
-    return repository.getById(id).orElseThrow(NotFoundException::new);
-  }
+    public PostDto getById(long id) {
+        return getPostDtoById(id);
+        //return repository.getById(id).orElseThrow(NotFoundException::new);
+    }
 
-  public Post save(Post post) {
-    return repository.save(post);
-  }
+    public PostDto save(Post post) {
+        return savePost(post);
+        //return repository.save(post);
+    }
 
-  public void removeById(long id) {
-    repository.removeById(id);
-  }
+    public void removeById(long id) {
+        repository.removeById(id);
+    }
 
-  public List<PostDto> findAllDto() {
-    return repository.all().stream() //создали из листа стирим
-            .filter(x -> x.getRemoved() == false)
-            //оператором из streamAPI map, использовали для каждого элемента метод mapToProductDto из класса MappingUtils
-            .collect(Collectors.toList()); //превратили стрим обратно в коллекцию, а точнее в лист
-  }
+    public List<PostDto> findAllDto() {
+        return repository.all().stream()
+                .filter(x -> !x.getRemoved())
+                .map(value -> new PostDto(value.getId(), value.getContent()))
+                .collect(Collectors.toList());
+    }
 
-  //для одиночного продукта обошлись проще
-  public ProductDto findById(Integer id) {
-    return mappingUtils.mapToProductDto( //в метод mapToProductDto
-            productRepository.findById(id) //поместили результат поиска по id
-                    .orElse(new ProductEntity()) //если ни чего не нашли, то вернем пустой entity
-    );
-  }
+    public PostDto savePost(Post post) {
+        repository.save(post);
+        return new PostDto(post.getId(), post.getContent());
+    }
+
+    public PostDto getPostDtoById(long id) {
+        Post post = repository.getById(id).orElseThrow(NotFoundException::new);
+        return new PostDto(post.getId(), post.getContent());
+    }
 }
 
